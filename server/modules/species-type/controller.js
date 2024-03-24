@@ -187,7 +187,7 @@ exports.updateById = async (req, res) => {
       payload
     );
 
-    if (tolfaSpeciesInit) {
+    if (updatedData) {
       res.status(200).json({
         message: "user fetched",
         data: { ...updatedData },

@@ -1,6 +1,10 @@
 const pool = require("../../../database");
 const moment = require("moment");
+const { TolfaBlockNumber } = require("./model/block-number.model");
+const { decodeToken } = require("../../middleware/auth.middleware");
 const TABLE_NAME = "tolfa_block_number";
+
+const tolfaSpeciesInit = new TolfaBlockNumber();
 
 exports.get = async (req, res) => {
   const statement = `SELECT 
@@ -161,5 +165,50 @@ exports.delete = async (req, res) => {
       status: 500,
       success: false,
     });
+  }
+};
+
+/**
+ * @migration - Sequelize
+ */
+
+// Controller function to update tolfaBlockDetail entry by ID
+exports.updateById = async (req, res) => {
+  try {
+    const id = req.body.id; // Assuming ID is passed in the URL params
+    let token = req.headers.auth_token;
+    let userToken = await decodeToken(token);
+
+    // Find the tolfaBlockDetail entry by ID
+    let tolfaBlockDetail = await TolfaBlockNumber.findByPk(id);
+
+    // If tolfaBlockDetail entry does not exist, return 404 Not Found
+    if (!tolfaBlockDetail) {
+      return res.status(404).json({ message: "tolfaBlockDetail not found" });
+    }
+
+    const payload = {
+      ...req.body,
+      id: id,
+      area_id: req.body.area_id,
+      name: req.body.name,
+      updated_by: userToken.id,
+      updated_at: moment().format("YYYY-MM-DD HH:mm:ss"),
+    };
+
+    // Update tolfaBlockDetail entry with the fields provided in the request body
+    tolfaBlockDetail = await TolfaBlockNumber.update(payload, {
+      where: { id: id }, // Specify the where clause to update by ID
+    });
+
+    // Send success response
+    return res.status(200).json({
+      message: "tolfaBlockDetail updated successfully",
+      tolfaBlockDetail,
+    });
+  } catch (error) {
+    console.error("Error updating tolfaBlockDetail:", error);
+    // Send error response
+    return res.status(500).json({ message: "Internal server error" });
   }
 };

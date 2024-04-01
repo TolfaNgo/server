@@ -19,7 +19,7 @@ exports.get = async (req, res) => {
   FROM tolfa_block_number as tbn 
   INNER JOIN tolfa_user as tu on tu.id = tbn.updated_by
   INNER JOIN tolfa_user as itu on itu.id = tbn.created_by 
-  INNER JOIN tolfa_area as ta on ta.id = tbn.area_id`;
+  INNER JOIN tolfa_area as ta on ta.id = tbn.area_id where tbn.active = true`;
 
   pool.query(statement, (err, result, fileds) => {
     try {

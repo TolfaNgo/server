@@ -1,23 +1,25 @@
 const pool = require("../../../database");
+const { TolfaBlockNumber } = require("./model/block-number.model");
 
 exports.duplicate = async (req, res, next) => {
   try {
-    let { body } = req;
-    let { name, area_id } = body;
+    const { name, area_id } = req.body;
 
-    const statement = `SELECT * FROM tolfa_block_number WHERE name = '${name}' AND 	area_id = ${area_id} AND active = ${false}`;
-    const query = (statement) => {
-      pool.query(statement, (error, results, fields) => {
-        if (results && results.length) {
-          res.status(422).json({
-            message: "data already exist with this name",
-          });
-        } else {
-          next();
-        }
+    const existingRecord = await TolfaBlockNumber.findOne({
+      where: {
+        name: name,
+        area_id: area_id,
+        active: 1,
+      },
+    });
+
+    if (existingRecord) {
+      return res.status(422).json({
+        message: "Data already exists with this name",
       });
-    };
-    query(statement);
+    }
+
+    next();
   } catch (error) {
     console.log("error", error);
     res.status(500).json({

@@ -14,7 +14,7 @@ exports.login = async (req, res, next) => {
     try {
       if (result[0].cnt > 0) {
         var token = jwt.sign({ phone_no: phone_no, id: result[0].id }, secret, {
-          expiresIn: 186400,
+          expiresIn: 18640000,
           // expiresIn: 3600,
         });
         res.status(200).json({

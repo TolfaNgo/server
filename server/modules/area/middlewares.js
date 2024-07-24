@@ -1,26 +1,24 @@
-const pool = require("../../../database");
+const { TolfaArea } = require("./model/tolfa-area.model");
 
 exports.duplicate = async (req, res, next) => {
   try {
-    let { body } = req;
-    let { name, city_id } = body;
+    const { name } = req.body;
 
-    const statement = `SELECT * FROM tolfa_area WHERE name = '${name}'`;
-    console.log(statement);
-    const query = (statement) => {
-      pool.query(statement, (error, results, fields) => {
-        if (results && results.length) {
-          res.status(422).json({
-            message: "Data already exist with this name",
-          });
-        } else {
-          next();
-        }
+    // Check for duplicate name
+    const existingRecord = await TolfaArea.findOne({
+      where: { name: name, active: 1 },
+    });
+
+    if (existingRecord) {
+      return res.status(422).json({
+        message: "Data already exists with this name",
       });
-    };
-    query(statement);
+    }
+
+    // Proceed to the next middleware or controller if no duplicate found
+    next();
   } catch (error) {
-    console.log("error", error);
+    console.error("Error:", error);
     res.status(500).json({
       message: "Internal Server Error",
       success: false,

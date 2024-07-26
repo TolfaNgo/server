@@ -5,7 +5,7 @@ exports.duplicate = async (req, res, next) => {
     let { body } = req;
     let { name } = body;
 
-    const statement = `SELECT * FROM tolfa_rescue_type WHERE name = '${name}'`;
+    const statement = `SELECT * FROM tolfa_rescue_type WHERE name = '${name}' and active = 1`;
     console.log(statement);
     const query = (statement) => {
       pool.query(statement, (error, results, fields) => {

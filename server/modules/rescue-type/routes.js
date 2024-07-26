@@ -13,8 +13,8 @@ router.post(
   controller.create
 );
 /* UPDATE */
-router.put("/update", controller.update);
+router.post("/update", controller.update);
 /* DELETE */
-router.delete("/delete", controller.delete);
+router.put("/delete", controller.delete);
 
 module.exports = router;

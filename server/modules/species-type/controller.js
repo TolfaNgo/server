@@ -19,7 +19,7 @@ exports.get = async (req, res) => {
   FROM tolfa_species as ts 
   INNER JOIN tolfa_user as tu on tu.id = ts.updated_by
   INNER JOIN tolfa_user as itu on itu.id = ts.created_by 
-  INNER JOIN tolfa_rescue_type as trt on trt.id = ts.rescue_type_id`;
+  INNER JOIN tolfa_rescue_type as trt on trt.id = ts.rescue_type_id where ts.active = 1`;
 
   pool.query(statement, (err, result, fileds) => {
     try {
@@ -152,7 +152,7 @@ exports.delete = async (req, res) => {
       } else if (result) {
         res.status(200).json({
           status: 200,
-          message: "Species deleted successfuly",
+          message: "Record deleted successfuly",
           success: true,
           data: result[0],
         });

@@ -3,6 +3,7 @@ const moment = require("moment");
 const TABLE_NAME = "tolfa_city";
 const { TolfaCity } = require("./model/city.model");
 const { decodeToken } = require("../../middleware/auth.middleware");
+const { TolfaCityArea } = require("../city-area/model/city-area.model");
 
 const tolfaCityInit = new TolfaCity();
 
@@ -136,32 +137,56 @@ exports.update = async (req, res) => {
 
 exports.delete = async (req, res) => {
   try {
-    let { body } = req;
-    let { id } = body;
+    const { id } = req.body;
 
-    const statement = `UPDATE ${TABLE_NAME} set active = ${false} where id = ${id}`;
+    // Ensure id is provided
+    if (!id) {
+      return res.status(400).json({
+        status: 400,
+        message: "ID is required",
+        success: false,
+      });
+    }
 
-    pool.query(statement, (err, result, fileds) => {
-      if (err) {
-        res.status(500).json({
-          status: 500,
-          message: err,
-          success: false,
-        });
-        return;
-      } else if (result) {
-        res.status(200).json({
-          status: 200,
-          message: "Record deleted successfuly",
-          success: true,
-          data: result[0],
-        });
-      }
+    // Find the record by ID
+    const record = await TolfaCity.findByPk(id);
+
+    if (!record) {
+      return res.status(404).json({
+        status: 404,
+        message: "Record not found",
+        success: false,
+      });
+    }
+
+    // Check if the record is being used in TolfaBlockNumber
+    const tolfaArea = await TolfaCityArea.findAll({
+      where: { city_id: id, active: 1 },
+    });
+
+    if (tolfaArea.length > 0) {
+      return res.status(400).json({
+        status: 400,
+        message:
+          "Cannot delete this city as it is being used in one or more city area.",
+        success: false,
+      });
+    }
+
+    // Update the record to set active to false
+    record.active = false;
+    await record.save();
+
+    res.status(200).json({
+      status: 200,
+      message: "Record deleted successfully",
+      success: true,
+      data: record,
     });
   } catch (error) {
-    console.log("error", error);
+    console.error("Error:", error);
     res.status(500).json({
-      message: "Ops something went wrong",
+      message: "Oops, something went wrong",
       status: 500,
       success: false,
     });
@@ -172,7 +197,7 @@ exports.delete = async (req, res) => {
  * @migration - Sequelize
  */
 
- exports.updateById = async (req, res) => {
+exports.updateById = async (req, res) => {
   try {
     let data = req.body;
     let token = req.headers.auth_token;
@@ -182,10 +207,7 @@ exports.delete = async (req, res) => {
       updated_at: undefined,
       updated_by: userToken.id,
     };
-    let updatedData = await tolfaCityInit.updateTolfaCity(
-      data.id,
-      payload
-    );
+    let updatedData = await tolfaCityInit.updateTolfaCity(data.id, payload);
 
     if (updatedData) {
       res.status(200).json({

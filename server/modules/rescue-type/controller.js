@@ -1,5 +1,7 @@
 const pool = require("../../../database");
 const moment = require("moment");
+const { TolfaRescueType } = require("./model/rescue-type.model");
+const { TolfaSpecies } = require("../species-type/model/species-type.model");
 const TABLE_NAME = "tolfa_rescue_type";
 
 exports.get = async (req, res) => {
@@ -92,35 +94,49 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   try {
-    let { body } = req;
-    let { name, id, updated_by } = body;
+    const { id, name, created_by, updated_by, active } = req.body;
 
-    const statement = `UPDATE ${TABLE_NAME} set 
-    name = '${name}', 
-    updated_by = ${updated_by},
-    updated_at = '${moment().format("YYYY-MM-DD HH:mm:ss")}' where id = ${id}`;
+    // Ensure id is provided
+    if (!id) {
+      return res.status(400).json({
+        status: 400,
+        message: "ID is required",
+        success: false,
+      });
+    }
 
-    pool.query(statement, (err, result, fileds) => {
-      if (err) {
-        res.status(500).json({
-          status: 500,
-          message: err,
-          success: false,
-        });
-        return;
-      } else if (result) {
-        res.status(200).json({
-          status: 200,
-          message: "Rescue type updated successfuly",
-          success: true,
-          data: result[0],
-        });
-      }
+    // Find the record by ID
+    const area = await TolfaRescueType.findByPk(id);
+
+    if (!area) {
+      return res.status(404).json({
+        status: 404,
+        message: "Record not found",
+        success: false,
+      });
+    }
+
+    // Update the record with new values
+    const updatedTolfaSpecies = await TolfaRescueType.update(
+      {
+        name,
+        created_by,
+        updated_by,
+        active,
+      },
+      { where: { id } }
+    );
+
+    res.status(200).json({
+      status: 200,
+      message: "Record updated successfully",
+      success: true,
+      data: updatedTolfaSpecies,
     });
   } catch (error) {
-    console.log("error", error);
+    console.error("Error:", error);
     res.status(500).json({
-      message: "Ops something went wrong",
+      message: "Oops, something went wrong",
       status: 500,
       success: false,
     });
@@ -129,32 +145,44 @@ exports.update = async (req, res) => {
 
 exports.delete = async (req, res) => {
   try {
-    let { body } = req;
-    let { id } = body;
+    const { id } = req.body;
 
-    const statement = `UPDATE ${TABLE_NAME} set active = ${false} where id = ${id}`;
-
-    pool.query(statement, (err, result, fileds) => {
-      if (err) {
-        res.status(500).json({
-          status: 500,
-          message: err,
-          success: false,
-        });
-        return;
-      } else if (result) {
-        res.status(200).json({
-          status: 200,
-          message: "Rescue type deleted successfuly",
-          success: true,
-          data: result[0],
-        });
-      }
+    // Check if the record is being used in TolfaBlockNumber
+    const speciesType = await TolfaSpecies.findAll({
+      where: { rescue_type_id: id, active: 1 },
     });
+
+    if (speciesType.length > 0) {
+      return res.status(400).json({
+        status: 400,
+        message:
+          "Cannot delete this area as it is being used in one or more tolfa species.",
+        success: false,
+      });
+    }
+
+    const result = await TolfaRescueType.update(
+      { active: false },
+      { where: { id } }
+    );
+
+    if (result[0] > 0) {
+      res.status(200).json({
+        status: 200,
+        message: "Rescue type deactivated successfully",
+        success: true,
+      });
+    } else {
+      res.status(404).json({
+        status: 404,
+        message: "Rescue type not found",
+        success: false,
+      });
+    }
   } catch (error) {
-    console.log("error", error);
+    console.error("Error deactivating rescue type:", error);
     res.status(500).json({
-      message: "Ops something went wrong",
+      message: "Oops, something went wrong",
       status: 500,
       success: false,
     });

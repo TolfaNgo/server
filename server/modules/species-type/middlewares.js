@@ -5,7 +5,7 @@ exports.duplicateRescueType = async (req, res, next) => {
     let { body } = req;
     let { name, rescue_type_id } = body;
 
-    const statement = `SELECT * FROM tolfa_species WHERE name = '${name}' and rescue_type_id = ${rescue_type_id}`;
+    const statement = `SELECT * FROM tolfa_species WHERE name = '${name}' and rescue_type_id = ${rescue_type_id} and active = 1`;
     console.log(statement);
     const query = (statement) => {
       pool.query(statement, (error, results, fields) => {

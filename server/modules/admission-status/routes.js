@@ -35,4 +35,6 @@ router.get(
  */
 router.post("/update/rescue-animal-status", controller.updateRescueAnimalStatus);
 
+router.post("/update/rescue-animal-info", controller.updateRescueAnimalInfo);
+
 module.exports = router;

@@ -1,5 +1,6 @@
 const pool = require("../../../database");
 const moment = require("moment");
+const { TolfaAdmissionStatus } = require("./model/admission-status.model");
 const TABLE_NAME = "tolfa_animal_status";
 
 exports.get = async (req, res) => {
@@ -1078,6 +1079,111 @@ exports.delete = async (req, res) => {
     console.log("error", error);
     res.status(500).json({
       message: "Ops something went wrong",
+      status: 500,
+      success: false,
+    });
+  }
+};
+
+exports.updateRescueAnimalInfo = async (req, res) => {
+  try {
+    const {
+      id,
+      type_of_rescue_id,
+      species_id,
+      state_id,
+      city_id,
+      area_id,
+      rescue_address,
+      rescue_by_tolfa,
+      animal_name,
+      sex,
+      age,
+      main_color_id,
+      second_color_id,
+      thirdcolor_id,
+      id_features,
+      breed_id,
+      animal_image,
+      active,
+      updated_by,
+    } = req.body;
+
+    // Ensure id is provided
+    if (!id) {
+      return res.status(400).json({
+        status: 400,
+        message: "ID is required",
+        success: false,
+      });
+    }
+
+    // Find the record by ID
+    const rescueAnimal = await TolfaAdmissionStatus.findByPk(id);
+
+    if (!rescueAnimal) {
+      return res.status(404).json({
+        status: 404,
+        message: "Record not found",
+        success: false,
+      });
+    }
+
+    // Update the record with new values
+    rescueAnimal.type_of_rescue_id =
+      type_of_rescue_id !== undefined
+        ? type_of_rescue_id
+        : rescueAnimal.type_of_rescue_id;
+    rescueAnimal.species_id =
+      species_id !== undefined ? species_id : rescueAnimal.species_id;
+    rescueAnimal.state_id =
+      state_id !== undefined ? state_id : rescueAnimal.state_id;
+    rescueAnimal.city_id =
+      city_id !== undefined ? city_id : rescueAnimal.city_id;
+    rescueAnimal.area_id =
+      area_id !== undefined ? area_id : rescueAnimal.area_id;
+    rescueAnimal.rescue_address =
+      rescue_address !== undefined
+        ? rescue_address
+        : rescueAnimal.rescue_address;
+    rescueAnimal.rescue_by_tolfa =
+      rescue_by_tolfa !== undefined
+        ? rescue_by_tolfa
+        : rescueAnimal.rescue_by_tolfa;
+    rescueAnimal.animal_name =
+      animal_name !== undefined ? animal_name : rescueAnimal.animal_name;
+    rescueAnimal.sex = sex !== undefined ? sex : rescueAnimal.sex;
+    rescueAnimal.age = age !== undefined ? age : rescueAnimal.age;
+    rescueAnimal.main_color_id =
+      main_color_id !== undefined ? main_color_id : rescueAnimal.main_color_id;
+    rescueAnimal.second_color_id =
+      second_color_id !== undefined
+        ? second_color_id
+        : rescueAnimal.second_color_id;
+    rescueAnimal.thirdcolor_id =
+      thirdcolor_id !== undefined ? thirdcolor_id : rescueAnimal.thirdcolor_id;
+    rescueAnimal.id_features =
+      id_features !== undefined ? id_features : rescueAnimal.id_features;
+    rescueAnimal.breed_id =
+      breed_id !== undefined ? breed_id : rescueAnimal.breed_id;
+    rescueAnimal.animal_image =
+      animal_image !== undefined ? animal_image : rescueAnimal.animal_image;
+    rescueAnimal.active = active !== undefined ? active : rescueAnimal.active;
+    rescueAnimal.updated_by =
+      updated_by !== undefined ? updated_by : rescueAnimal.updated_by;
+
+    await rescueAnimal.save();
+
+    res.status(200).json({
+      status: 200,
+      message: "Record updated successfully",
+      success: true,
+      data: rescueAnimal,
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({
+      message: "Oops, something went wrong",
       status: 500,
       success: false,
     });

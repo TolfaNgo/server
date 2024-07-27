@@ -5,7 +5,7 @@ exports.duplicate = async (req, res, next) => {
     let { body } = req;
     let { name, state_id } = body;
 
-    const statement = `SELECT * FROM tolfa_city WHERE name = '${name}' AND 	state_id = ${state_id}`;
+    const statement = `SELECT * FROM tolfa_city WHERE name = '${name}' AND state_id = ${state_id} AND active = 1`;
     const query = (statement) => {
       pool.query(statement, (error, results, fields) => {
         if (results && results.length) {

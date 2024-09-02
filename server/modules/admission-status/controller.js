@@ -153,7 +153,18 @@ exports.get = async (req, res) => {
     tbreed.updated_at AS breed_updated_at,
     tbreed.active AS breed_active,
 
-    ta.name as tolfa_area_name
+    ta.name as tolfa_area_name,
+
+    main_tc.name as main_color,
+    second_tc.name as second_color,
+    t_animal_condition.name as animal_condition_value,
+    t_animal_condition.id as animal_condition_id,
+    t_animal_status.name as animal_status_value,
+    t_animal_status.id as animal_status_id,
+    t_animal_body_score.name as animal_body_score_value,
+    t_animal_body_score.id as animal_body_score_id,
+    t_animal_abc_status.name as animal_abc_status_value,
+    t_animal_abc_status.id as animal_abc_status_id
     
   FROM
     tolfa_admission_status tas
@@ -176,6 +187,12 @@ exports.get = async (req, res) => {
     LEFT JOIN tolfa_animal_breed tbreed ON tas.breed_id = tbreed.id
     LEFT JOIN tolfa_block_number tbn ON trl.tolfa_block_id = tbn.id
     LEFT JOIN tolfa_area ta ON trl.tolfa_area_id = ta.id
+    LEFT JOIN tolfa_color main_tc ON tas.main_color_id = main_tc.id AND main_tc.color_type = 'maincolor'
+    LEFT JOIN tolfa_color second_tc ON tas.second_color_id = second_tc.id AND second_tc.color_type = 'color2'    
+    LEFT JOIN tolfa_condition t_animal_condition ON rs.condition_value = t_animal_condition.id 
+    LEFT JOIN tolfa_status t_animal_status ON rs.status_id = t_animal_status.id 
+    LEFT JOIN tolfa_body_score t_animal_body_score ON rs.body_score = t_animal_body_score.id 
+    LEFT JOIN tolfa_abc_status t_animal_abc_status ON rs.abc_status = t_animal_abc_status.id 
   GROUP BY tas.id
 `;
 

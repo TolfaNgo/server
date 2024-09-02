@@ -14,6 +14,11 @@ const blockNumber = require("../modules/block-number");
 const admissionStatus = require("../modules/admission-status");
 const carePeople = require("../modules/care-people");
 const analytics = require("../modules/analytics");
+const color = require("../modules/color");
+const abcStatus = require("../modules/abc-status");
+const status = require("../modules/status");
+const condition = require("../modules/condition");
+const bodyScore = require("../modules/body-score");
 
 const test = require("../modules/test");
 const auth = require("../modules/auth");
@@ -40,6 +45,14 @@ router.use("/analytics", authMiddleware.verifyToken, analytics);
 
 router.use("/admission", authMiddleware.verifyToken, admissionStatus);
 router.use("/care-people", authMiddleware.verifyToken, carePeople);
+
+router.use("/tolfa-abc-status", authMiddleware.verifyToken, abcStatus);
+
+router.use("/tolfa-status", authMiddleware.verifyToken, status);
+router.use("/tolfa-condition", authMiddleware.verifyToken, condition);
+router.use("/tolfa-body-score", authMiddleware.verifyToken, bodyScore);
+
+router.use("/color", authMiddleware.verifyToken, color);
 
 router.use("/role", authMiddleware.verifyToken, role);
 router.use("/user", user);

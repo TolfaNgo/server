@@ -7,10 +7,10 @@ const router = express.Router();
 /* GET */
 router.get("/get", controller.getRoles);
 /* CREATE */
-router.post("/create", middlewares.duplicateRoleType, controller.createRole);
+router.post("/create", controller.createRole);
 /* UPDATE */
-router.put("/update", controller.updateRoleType);
+router.post("/update/:id", controller.updateRole);
 /* DELETE */
-router.put("/delete/:id", controller.deleteRoleType);
+router.delete("/delete/:id", controller.deleteRole);
 
 module.exports = router;

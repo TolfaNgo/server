@@ -1,226 +1,107 @@
-const pool = require("../../../database");
-const helper = require("./helper");
-const moment = require("moment");
+const { decodeToken } = require("../../middleware/auth.middleware");
+const { TolfaUser } = require("./model/user.model"); // Adjust the path according to your project structure
 
-const TABLE_NAME = "tolfa_user";
-const TABLE_TOLFA_USER_ROLE = "tolfa_user_role";
-
-exports.getUsers = async (req, res) => {
-  const { params } = req;
-  const { id } = params;
-  let statement = `SELECT * FROM ${TABLE_NAME}`;
-  if (id) {
-    statement = `SELECT * FROM ${TABLE_NAME} where id = ${id}`;
+// GET all users
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await TolfaUser.findAll();
+    res.status(200).json(users);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ error: "An error occurred while fetching users" });
   }
+};
 
-  pool.query(statement, (err, result, fileds) => {
-    try {
-      if (err) {
-        res.status(500).json({
-          status: 500,
-          message: err,
-          success: false,
-        });
-        return;
-      } else if (result && result.length) {
-
-        const getUserRoles = async () => {
-          if (id) {
-            await helper.getRolesByUser(result[0].id, res, result);
-          } else {
-            await helper.getAllUser(result[0].id, res, result);
-          }
-        };
-        getUserRoles();
-      }
-    } catch (error) {
-      res.status(500).json({
-        message: "Ops something went wrong",
-        status: 500,
-        success: false,
-      });
+// GET user by ID
+const getUserById = async (req, res) => {
+  try {
+    const user = await TolfaUser.findByPk(req.params.id);
+    if (user) {
+      res.status(200).json(user);
+    } else {
+      res.status(404).json({ error: "User not found" });
     }
-  });
-};
-
-exports.createUser = async (req, res, next) => {
-  try {
-    let { body } = req;
-    let { name, email, phone_no, created_by, updated_by, password, role_data } =
-      body;
-
-    const statement = `INSERT INTO ${TABLE_NAME} (
-      name, 
-      email, 
-      phone_no,
-      password,
-      active,
-      created_by,
-      updated_by,
-      created_at, 
-      updated_at
-      )
-    values(
-      '${name}', 
-      '${email}', 
-      '${phone_no}',
-      '${"tolfa@123"}',
-       ${true},
-       ${created_by},
-       ${created_by},
-       '${moment().format("YYYY-MM-DD HH:mm:ss")}', 
-       '${moment().format("YYYY-MM-DD HH:mm:ss")}'
-       )`;
-
-    pool.query(statement, (err, result, fileds) => {
-      if (err) {
-        res.status(500).json({
-          status: 500,
-          message: err,
-          success: false,
-        });
-      } else if (result) {
-        let userXrole = [];
-        role_data.map((item) => {
-          userXrole.push([result.insertId, item]);
-        });
-        req.body.userXrole = userXrole;
-        next();
-      }
-    });
   } catch (error) {
-    console.log("error", error);
-    res.status(500).json({
-      message: "Ops something went wrong",
-      status: 500,
-      success: false,
-    });
+    console.error("Error fetching user:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while fetching the user" });
   }
 };
 
-exports.addRolesToUser = async (req, res) => {
+// CREATE a new user
+const createUser = async (req, res) => {
+  let token = req.headers.auth_token;
+  let userToken = await decodeToken(token);
+
+  req.body.created_by = userToken.id;
+  req.body.updated_by = userToken.id;
+
   try {
-    let { body } = req;
-    let { role_id, user_id, userXrole } = body;
-    // [[user_id, role_id]]
-    let userIdVsRoleId = [
-      [1, 1],
-      [2, 2],
-    ];
-
-    const statement = `INSERT INTO ${TABLE_TOLFA_USER_ROLE} (
-      user_id, 
-      role_id
-      ) 
-      VALUES ?`;
-
-    let values = userXrole;
-
-    pool.query(statement, [values], (err, result, fileds) => {
-      try {
-        if (err) {
-          res.status(500).json({
-            status: 500,
-            message: err,
-            success: false,
-          });
-          return;
-        } else if (result) {
-          res.status(200).json({
-            status: 200,
-            message: "User created and mapped with roles successfuly",
-            success: true,
-            data: result[0],
-          });
-          return;
-        }
-      } catch (error) {
-        console.log("error", error);
-        res.status(500).json({
-          message: "Ops something went wrong",
-          status: 500,
-          success: false,
-        });
-      }
+    const newUser = await TolfaUser.create({
+      ...req.body,
+      password: "Tolfa@123",
     });
+    res.status(201).json(newUser);
   } catch (error) {
-    console.log("error", error);
-    res.status(500).json({
-      message: "Ops something went wrong",
-      status: 500,
-      success: false,
-    });
+    console.error("Error creating user:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while creating the user" });
   }
 };
 
-// need to work on this
-exports.updateUser = async (req, res) => {
+// UPDATE user by ID
+const updateUser = async (req, res) => {
+  let token = req.headers.auth_token;
+  let userToken = await decodeToken(token);
+
+  req.body.created_by = userToken.id;
+  req.body.updated_by = userToken.id;
+
   try {
-    let { body } = req;
-    let { name, updated_by, id } = body;
-
-    const statement = `UPDATE ${TABLE_NAME} set name = '${name}', updated_by = '${updated_by}', updated_at = '${moment().format(
-      "YYYY-MM-DD HH:mm:ss"
-    )}' where id = ${id}`;
-
-    pool.query(statement, (err, result, fileds) => {
-      if (err) {
-        res.status(500).json({
-          status: 500,
-          message: err,
-          success: false,
-        });
-        return;
-      } else if (result) {
-        res.status(200).json({
-          status: 200,
-          message: "Role type updated successfuly",
-          success: true,
-          data: result[0],
-        });
-      }
+    const [updated] = await TolfaUser.update(req.body, {
+      where: { id: req.params.id },
     });
+
+    if (updated) {
+      const updatedUser = await TolfaUser.findByPk(req.params.id);
+      res.status(200).json(updatedUser);
+    } else {
+      res.status(404).json({ error: "User not found" });
+    }
   } catch (error) {
-    console.log("error", error);
-    res.status(500).json({
-      message: "Ops something went wrong",
-      status: 500,
-      success: false,
-    });
+    console.error("Error updating user:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while updating the user" });
   }
 };
 
-// need to work on this
-exports.deleteUser = async (req, res) => {
+// DELETE user by ID
+const deleteUser = async (req, res) => {
   try {
-    let { body } = req;
-    let { id } = body;
-
-    const statement = `DELETE from ${TABLE_NAME} where id = ${id}`;
-
-    pool.query(statement, (err, result, fileds) => {
-      if (err) {
-        res.status(500).json({
-          status: 500,
-          message: err,
-          success: false,
-        });
-        return;
-      } else if (result) {
-        res.status(200).json({
-          status: 200,
-          message: "Role deleted successfuly",
-          success: true,
-          data: result[0],
-        });
-      }
+    const deleted = await TolfaUser.destroy({
+      where: { id: req.params.id },
     });
+
+    if (deleted) {
+      res.status(204).send();
+    } else {
+      res.status(404).json({ error: "User not found" });
+    }
   } catch (error) {
-    console.log("error", error);
-    res.status(500).json({
-      message: "Ops something went wrong",
-      status: 500,
-      success: false,
-    });
+    console.error("Error deleting user:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while deleting the user" });
   }
+};
+
+module.exports = {
+  getAllUsers,
+  getUserById,
+  createUser,
+  updateUser,
+  deleteUser,
 };

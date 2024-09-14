@@ -5,19 +5,14 @@ const middlewares = require("./middlewares");
 const router = express.Router();
 
 /* GET */
-router.get("/", controller.getUsers);
+router.get("/", controller.getAllUsers);
 /* GET bvy :ID */
-router.get("/:id", controller.getUsers);
+// router.get("/:id", controller.getUsers);
 /* CREATE */
-router.post(
-  "/create",
-  middlewares.duplicateUser,
-  controller.createUser,
-  controller.addRolesToUser
-);
+router.post("/create", controller.createUser);
 /* UPDATE */
-router.put("/update", controller.updateUser);
+router.post("/update/:id", controller.updateUser);
 /* DELETE */
-router.delete("/delete", controller.deleteUser);
+router.delete("/delete/:id", controller.deleteUser);
 
 module.exports = router;

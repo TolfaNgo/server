@@ -190,7 +190,7 @@ exports.get = async (req, res) => {
     LEFT JOIN tolfa_color main_tc ON tas.main_color_id = main_tc.id AND main_tc.color_type = 'maincolor'
     LEFT JOIN tolfa_color second_tc ON tas.second_color_id = second_tc.id AND second_tc.color_type = 'color2'    
     LEFT JOIN tolfa_condition t_animal_condition ON rs.condition_value = t_animal_condition.id 
-    LEFT JOIN tolfa_status t_animal_status ON rs.status_id = t_animal_status.id 
+    LEFT JOIN tolfa_animal_status t_animal_status ON rs.status_id = t_animal_status.id 
     LEFT JOIN tolfa_body_score t_animal_body_score ON rs.body_score = t_animal_body_score.id 
     LEFT JOIN tolfa_abc_status t_animal_abc_status ON rs.abc_status = t_animal_abc_status.id 
   GROUP BY tas.id

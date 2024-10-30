@@ -39,7 +39,7 @@ const createTolfaStatus = async (req, res) => {
 // Get all TolfaStatus records
 const getAllTolfaStatus = async (req, res) => {
   try {
-    const statuses = await TolfaStatus.findAll();
+    const statuses = await TolfaStatus.findAll({ where: { active: 1 } });
     res.status(200).json(statuses);
   } catch (error) {
     console.error("Error fetching TolfaStatus:", error);

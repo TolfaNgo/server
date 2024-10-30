@@ -19,6 +19,7 @@ const abcStatus = require("../modules/abc-status");
 const status = require("../modules/status");
 const condition = require("../modules/condition");
 const bodyScore = require("../modules/body-score");
+const reports = require("../modules/reports");
 
 const test = require("../modules/test");
 const auth = require("../modules/auth");
@@ -53,6 +54,8 @@ router.use("/tolfa-condition", authMiddleware.verifyToken, condition);
 router.use("/tolfa-body-score", authMiddleware.verifyToken, bodyScore);
 
 router.use("/color", authMiddleware.verifyToken, color);
+
+router.use("/reports", reports);
 
 router.use("/role", authMiddleware.verifyToken, role);
 router.use("/user", user);

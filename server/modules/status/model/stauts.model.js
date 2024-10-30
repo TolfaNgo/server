@@ -2,7 +2,7 @@ const { DataTypes } = require("sequelize");
 const { rogerSequelize } = require("../../../../database/sequelize");
 
 const TolfaStatus = rogerSequelize.define(
-  "tolfa_status",
+  "tolfa_animal_status",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -40,7 +40,7 @@ const TolfaStatus = rogerSequelize.define(
     },
   },
   {
-    tableName: "tolfa_status",
+    tableName: "tolfa_animal_status",
     timestamps: true, // Automatically manage createdAt and updatedAt timestamps
     createdAt: "created_at", // Map Sequelize's createdAt to your table's created_at column
     updatedAt: "updated_at", // Map Sequelize's updatedAt to your table's updated_at column
